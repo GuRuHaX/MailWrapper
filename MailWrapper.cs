@@ -104,7 +104,6 @@ namespace GuruMail
                     {
                         throw smtpException;
                     }                                     
-                    }
                     Succes = false;
                 }
             catch(Exception exception)
@@ -116,7 +115,7 @@ namespace GuruMail
             }  
         }
     }
-}
+
 
 
         /* https://msdn.microsoft.com/en-us/library/ms173163.aspx
