@@ -50,11 +50,11 @@ namespace GuruMail
         /// <param name="sender">The sender's Email address.</param>
         /// <param name="password">The sender's Email password.</param>
         /// <param name="receiver">The receivers's Email address.</param>
-        public static async Task MailAsync(string subject, string content, bool attachment, string attachmentPath, string sender, string password, string receiver)
+        public static async Task MailAsync(string subject, string content, string attachmentPath, string sender, string password, string receiver)
         {
             // this call will await the Mail function but asynchronously 
             // so that your application can continue working while its being send.
-            await Task.Run((() => Mail(subject, content, attachment, attachmentPath, sender, password, receiver)));
+            await Task.Run((() => Mail(subject, content, attachmentPath, sender, password, receiver)));
         }
 
         /// <summary>
@@ -62,12 +62,11 @@ namespace GuruMail
         /// </summary>
         /// <param name="subject">The email subject.</param>
         /// <param name="content">The email content.</param>
-        /// <param name="addAttachment">Value for the presence of a attachment.</param>
         /// <param name="attachmentPath">The path for the attachment.</param>
         /// <param name="sender">The sender's Email address.</param>
         /// <param name="password">The sender's Email password.</param>
         /// <param name="receiver">The receivers's Email address.</param>
-        public static void Mail(string subject, string content, bool addAttachment, string attachmentPath, string sender, string password, string receiver)
+        public static void Mail(string subject, string content, string attachmentPath, string sender, string password, string receiver)
         {
             // If using zipfiles as attachement uncomment this =>
             // ContentType ct = new ContentType(".zip"); 
@@ -89,7 +88,7 @@ namespace GuruMail
                         //message.BodyEncoding = Encoding.UTF8;  Not necessary
                         message.Body = Environment.NewLine + content;
 
-                        if (addAttachment && attachmentPath != string.Empty)
+                        if (attachmentPath != string.Empty)
                         {
                             Attachment attachment = new Attachment(attachmentPath);
                             message.Attachments.Add(attachment); // Add attachment to mail 
