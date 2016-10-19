@@ -100,80 +100,23 @@ namespace GuruMail
                 }
                 catch (SmtpException smtpException)
                 {
-                    //if (smtpException.GetType().IsAssignableFrom(typeof(SmtpStatusCode)))
-                    //{
-                    //    throw smtpException;
-                    //}
-                    //else
-                    //{
-                    //    // Another exception has been throwed , 
-                    //    // the app could have been accessed externally 
-                    //    // something i did not mentioned maybe ... 
-                    //}
-
-                    // using switch/if else is up to you : http://stackoverflow.com/questions/767821/is-else-if-faster-than-switch-case 
-                    switch (smtpException.StatusCode)
+                    if (smtpException.GetType().IsAssignableFrom(typeof(SmtpStatusCode)))
                     {
-                        case SmtpStatusCode.SystemStatus:
-                            throw smtpException;
-                        case SmtpStatusCode.HelpMessage:
-                            throw smtpException;
-                        case SmtpStatusCode.ServiceReady:
-                            throw smtpException;
-                        case SmtpStatusCode.ServiceClosingTransmissionChannel:
-                            throw smtpException;
-                        case SmtpStatusCode.Ok:
-                            throw smtpException;
-                        case SmtpStatusCode.UserNotLocalWillForward:
-                            throw smtpException;
-                        case SmtpStatusCode.CannotVerifyUserWillAttemptDelivery:
-                            throw smtpException;
-                        case SmtpStatusCode.StartMailInput:
-                            throw smtpException;
-                        case SmtpStatusCode.ServiceNotAvailable:
-                            throw smtpException;
-                        case SmtpStatusCode.MailboxBusy:
-                            throw smtpException;
-                        case SmtpStatusCode.LocalErrorInProcessing:
-                            throw smtpException;
-                        case SmtpStatusCode.InsufficientStorage:
-                            throw smtpException;
-                        case SmtpStatusCode.ClientNotPermitted:
-                            throw smtpException;
-                        case SmtpStatusCode.CommandUnrecognized:
-                            throw smtpException;
-                        case SmtpStatusCode.SyntaxError:
-                            throw smtpException;
-                        case SmtpStatusCode.CommandNotImplemented:
-                            throw smtpException;
-                        case SmtpStatusCode.BadCommandSequence:
-                            throw smtpException;
-                        case SmtpStatusCode.MustIssueStartTlsFirst:
-                            throw smtpException;
-                        case SmtpStatusCode.CommandParameterNotImplemented:
-                            throw smtpException;
-                        case SmtpStatusCode.MailboxUnavailable:
-                            throw smtpException;
-                        case SmtpStatusCode.UserNotLocalTryAlternatePath:
-                            throw smtpException;
-                        case SmtpStatusCode.ExceededStorageAllocation:
-                            throw smtpException;
-                        case SmtpStatusCode.MailboxNameNotAllowed:
-                            throw smtpException;
-                        case SmtpStatusCode.TransactionFailed:
-                            throw smtpException;
-                        case SmtpStatusCode.GeneralFailure:
-                            throw smtpException;
-                        default:
-                            // Another exception has been throwed , 
-                            // the app could have been accessed externally 
-                            // something i did not mentioned maybe ... 
-                            break;
+                        throw smtpException;
+                    }                                     
                     }
                     Succes = false;
                 }
-            }
+            catch(Exception exception)
+            {        
+                // Another exception has been throwed , 
+                // the app could have been accessed externally 
+                // something i did not mentioned maybe ... 
+                   throw new Exception(exception.InnerException);
+            }  
         }
+    }
+}
 
 
         /* https://msdn.microsoft.com/en-us/library/ms173163.aspx
