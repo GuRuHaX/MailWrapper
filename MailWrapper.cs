@@ -35,8 +35,8 @@ namespace GuruMail
 {
     public class Mailer
     {
-        /// <summary>
-        /// Boolean property that indicates the succes of sending the email. 
+       /// <summary>
+        /// Boolean property that indicates the succes of sending the email.
         /// </summary>
         public static bool Succes { get; private set; }
 
@@ -45,16 +45,14 @@ namespace GuruMail
         /// </summary>
         /// <param name="subject">The email subject.</param>
         /// <param name="content">The email content.</param>
-        /// <param name="addAttachment">Value for the presence of a attachment.</param>
+        /// <param name="attachmentType">Extension type for the attachment.</param>
         /// <param name="attachmentPath">The path for the attachment.</param>
         /// <param name="sender">The sender's Email address.</param>
         /// <param name="password">The sender's Email password.</param>
         /// <param name="receiver">The receivers's Email address.</param>
-        public static async Task MailAsync(string subject, string content, string attachmentPath, string sender, string password, string receiver)
+        public static async Task MailAsync(string subject, string content, string attachmentType, string attachmentPath, string sender, string password, string receiver)
         {
-            // this call will await the Mail function but asynchronously 
-            // so that your application can continue working while its being send.
-            await Task.Run((() => Mail(subject, content, attachmentPath, sender, password, receiver)));
+            await Task.Run((() => Mail(subject, content, attachmentType, attachmentPath, sender, password, receiver)));
         }
 
         /// <summary>
@@ -62,20 +60,19 @@ namespace GuruMail
         /// </summary>
         /// <param name="subject">The email subject.</param>
         /// <param name="content">The email content.</param>
+        /// <param name="attachmentType">Extension type for the attachment.</param>
         /// <param name="attachmentPath">The path for the attachment.</param>
         /// <param name="sender">The sender's Email address.</param>
         /// <param name="password">The sender's Email password.</param>
         /// <param name="receiver">The receivers's Email address.</param>
-        public static void Mail(string subject, string content, string attachmentPath, string sender, string password, string receiver)
+        public static void Mail(string subject, string content, string attachmentType, string attachmentPath, string sender, string password, string receiver)
         {
-            // If using zipfiles as attachement uncomment this =>
-            // ContentType ct = new ContentType(".zip"); 
-
+            attachmentType = checkAttachmentExtension(attachmentType);
             using (SmtpClient smtp = new SmtpClient("smtp.gmail.com", 587))
             {
-                smtp.EnableSsl = true; // use ssl
-                smtp.DeliveryMethod = SmtpDeliveryMethod.Network; // use network , IIS || external app/service
-                smtp.UseDefaultCredentials = false; // We are providing the credentials 
+                smtp.EnableSsl = true;
+                smtp.DeliveryMethod = SmtpDeliveryMethod.Network;
+                smtp.UseDefaultCredentials = false;
                 smtp.Credentials = new NetworkCredential(sender, password);
                 try
                 {
@@ -88,45 +85,69 @@ namespace GuruMail
                         //message.BodyEncoding = Encoding.UTF8;  Not necessary
                         message.Body = Environment.NewLine + content;
 
-                        if (attachmentPath != string.Empty)
+                        if (isValidPath(attachmentPath) && !string.IsNullOrEmpty(attachmentType))
                         {
-                            Attachment attachment = new Attachment(attachmentPath);
-                            message.Attachments.Add(attachment); // Add attachment to mail 
+                            Attachment attachment = new Attachment(attachmentPath, attachmentType);
+                            message.Attachments.Add(attachment);
                         }
 
-                        smtp.Send(message); // you can guess that i hope :)
+                        smtp.Send(message);
+                        Succes = true;
                     }
-                    Succes = true; // the mail has been sended succesfully
                 }
-                catch (SmtpException smtpException)
+                catch
                 {
-                    if (smtpException.GetType().IsAssignableFrom(typeof(SmtpStatusCode)))
-                    {
-                        throw smtpException;
-                    }                                     
                     Succes = false;
                 }
-            catch(Exception exception)
-            {        
-                // Another exception has been throwed , 
-                // the app could have been accessed externally 
-                // something i did not mentioned maybe ... 
-                   throw new Exception(exception.InnerException);
-            }  
+            }
+        }
+        
+        /// <summary>
+        /// Checks if the attachement is in a correct format.
+        /// </summary>
+        /// <param name="extension">The attachement value that has to be checked</param>
+        /// <returns>A string in a correct format or null if parameter is empty or null</returns>
+        private static string checkAttachmentExtension(string extension)
+        {
+            if (!string.IsNullOrEmpty(extension))
+            {
+                extension = (extension.Contains(".")) ? extension : "." + extension;
+                extension = (extension[0] == '.') ? extension : "." + extension;
+            }
+            else { return null; }
+            return extension;
+        }
+        
+        /// <summary>
+        /// Checks if the path of given file exists or not.
+        /// </summary>
+        /// <param name="path">The path that has to be checked</param>
+        /// <returns>True of false</returns>
+        public static bool isValidPath(string path)
+        {
+            FileInfo fileInfo = null;
+            try
+            {
+                fileInfo = new FileInfo(path);
+            }
+            catch (ArgumentException) { }
+            catch (PathTooLongException) { }
+            catch (NotSupportedException) { }
+
+            if (ReferenceEquals(fileInfo, null))
+            {
+                // file name is not valid
+                return false;
+            }
+            else
+            {
+                // file name is valid...
+                // check for existence 
+                if (fileInfo.Exists) { return true; }
+                return false;
+            }
         }
     }
-
-
-
-        /* https://msdn.microsoft.com/en-us/library/ms173163.aspx
-         
-           The following list identifies practices to avoid when throwing exceptions:
-
-           Exceptions should not be used to change the flow of a program as part of ordinary execution. Exceptions should only be used to report and handle error conditions.
-           Exceptions should not be returned as a return value or parameter instead of being thrown.
-           Do not throw System.Exception, System.SystemException, System.NullReferenceException, or System.IndexOutOfRangeException intentionally from your own source code.
-           Do not create exceptions that can be thrown in debug mode but not release mode. To identify run-time errors during the development phase, use Debug Assert instead.
-        */
-
+       
     }
 }
